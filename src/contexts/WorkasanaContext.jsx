@@ -23,10 +23,6 @@ export function WorkasanaProvider({ children }) {
 
   const API_BASE = "https://workasana-zeta.vercel.app";
 
-  // --- Fetch Data ---
-
-// --- Fetch Data ---
-
 // ✅ Corrected safe fetch calls
 
 const { data: projectData, refetch: refetchProjects } = useFetch(
@@ -49,8 +45,6 @@ const { data: ownersData, refetch: refetchOwners } = useFetch(
   token ? { headers: { Authorization: `Bearer ${token}` } } : {}
 );
 
-
-  
   // --- Auth Functions --- // Signup
 
   const signupUser = async (userData, navigate) => {

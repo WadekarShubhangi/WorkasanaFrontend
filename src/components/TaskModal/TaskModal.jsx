@@ -1,10 +1,10 @@
 import { useContext } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
-import "./TaskModal"
+import "./TaskModal.css"
 
 export default function TaskModal({ onClose }) {
   const {
-    addTask = {},
+    addTask,
     taskHandleChange,
     createTask,
     projectData,
