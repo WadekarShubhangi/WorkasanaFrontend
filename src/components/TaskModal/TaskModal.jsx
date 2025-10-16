@@ -1,72 +1,137 @@
 import { useContext } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
+import "./TaskModal"
 
 export default function TaskModal({ onClose }) {
- 
-    const {
-  addTask = {},
-  createTask,
-  taskHandleChange,
-  projectData,
-  teamData,
-  ownersData,
-} = useContext(WorkasanaContext);
-
-
+  const {
+    addTask = {},
+    taskHandleChange,
+    createTask,
+    projectData,
+    teamData,
+    ownersData,
+  } = useContext(WorkasanaContext);
 
   return (
     <>
       <div className="modal show d-block" tabIndex="-1">
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Create Task</h5>
+              <h5 className="modal-title fw-semibold">Create Task</h5>
               <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
+
             <div className="modal-body">
-              <input
-                type="text"
-                className="form-control mb-2"
-                placeholder="Task Name"
-                name="name"
-                value={addTask.name}
-                onChange={taskHandleChange}
-              />
-              <select
-                name="project"
-                className="form-select mb-2"
-                value={addTask.project}
-                onChange={taskHandleChange}
-              >
-                <option value="">Select Project</option>
-                {projectData?.map((proj) => (
-                  <option key={proj._id} value={proj._id}>
-                    {proj.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="team"
-                className="form-select mb-2"
-                value={addTask.team}
-                onChange={taskHandleChange}
-              >
-                <option value="">Select Team</option>
-                {teamData?.map((team) => (
-                  <option key={team._id} value={team._id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                name="timeToComplete"
-                placeholder="Time to complete (days)"
-                className="form-control"
-                value={addTask.timeToComplete}
-                onChange={taskHandleChange}
-              />
+              <form>
+                {/* Task Name */}
+                <div className="mb-3">
+                  <label className="form-label">Task Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="name"
+                    placeholder="Enter task name"
+                    value={addTask.name || ""}
+                    onChange={taskHandleChange}
+                  />
+                </div>
+
+                {/* Project */}
+                <div className="mb-3">
+                  <label className="form-label">Project</label>
+                  <select
+                    className="form-select"
+                    name="project"
+                    value={addTask.project || ""}
+                    onChange={taskHandleChange}
+                  >
+                    <option value="">Select Project</option>
+                    {Array.isArray(projectData) &&
+                      projectData.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Team */}
+                <div className="mb-3">
+                  <label className="form-label">Team</label>
+                  <select
+                    className="form-select"
+                    name="team"
+                    value={addTask.team || ""}
+                    onChange={taskHandleChange}
+                  >
+                    <option value="">Select Team</option>
+                    {Array.isArray(teamData) &&
+                      teamData.map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Owners */}
+                <div className="mb-3">
+                  <label className="form-label">Owners</label>
+                  <select
+                    multiple
+                    className="form-select"
+                    name="owners"
+                    value={addTask.owners || []}
+                    onChange={(e) =>
+                      taskHandleChange({
+                        target: {
+                          name: "owners",
+                          value: Array.from(e.target.selectedOptions, (o) => o.value),
+                        },
+                      })
+                    }
+                  >
+                    {Array.isArray(ownersData) &&
+                      ownersData.map((o) => (
+                        <option key={o._id} value={o._id}>
+                          {o.name}
+                        </option>
+                      ))}
+                  </select>
+                  <div className="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
+
+                {/* Tags */}
+                <div className="mb-3">
+                  <label className="form-label">Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="tags"
+                    placeholder="e.g. ui, testing"
+                    value={Array.isArray(addTask.tags) ? addTask.tags.join(", ") : addTask.tags || ""}
+                    onChange={taskHandleChange}
+                  />
+                </div>
+
+                {/* Time to Complete */}
+                <div className="mb-3">
+                  <label className="form-label">Time to Complete (days)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="timeToComplete"
+                    min="0"
+                    step="0.5"
+                    placeholder="Enter estimated days"
+                    value={addTask.timeToComplete || ""}
+                    onChange={taskHandleChange}
+                  />
+                </div>
+              </form>
             </div>
+
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={onClose}>
                 Cancel
@@ -78,6 +143,7 @@ export default function TaskModal({ onClose }) {
           </div>
         </div>
       </div>
+
       <div className="modal-backdrop fade show" onClick={onClose}></div>
     </>
   );

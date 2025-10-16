@@ -1,0 +1,14 @@
+.modal-content {
+  border-radius: 10px;
+  border: none;
+}
+
+.modal-header {
+  background: #111827;
+  color: #fff;
+}
+
+.form-select,
+.form-control {
+  border-radius: 6px;
+}

@@ -19,13 +19,16 @@ export default function Dashboard() {
   } = useContext(WorkasanaContext);
 
   const [query, setQuery] = useState("");
-const filteredProjects = projectData?.filter((p) =>
-  p.name.toLowerCase().includes(query.toLowerCase())
-);
-const filteredTasks = taskData?.filter((t) =>
-  t.name.toLowerCase().includes(query.toLowerCase())
-);
 
+  const filteredProjects = Array.isArray(projectData)
+    ? projectData.filter((p) =>
+        p.name.toLowerCase().includes(query.toLowerCase())
+      )
+    : [];
+
+  const filteredTasks = Array.isArray(taskData)
+    ? taskData.filter((t) => t.name.toLowerCase().includes(query.toLowerCase()))
+    : [];
 
   return (
     <>
