@@ -1,0 +1,10 @@
+.login-box{
+     width: 100%;
+  max-width: 400px;
+}
+.position-btn{
+    top: 75%
+}
+.brand-text{
+   color: var(--heading-color);
+}

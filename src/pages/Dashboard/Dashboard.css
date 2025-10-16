@@ -1,0 +1,35 @@
+.dashboard-container {
+  /* padding: 1.5rem; */
+}
+
+.section-block {
+  margin-top: 2rem;
+}
+
+.card-elevated {
+  border: none;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;              /* 👈 ensures equal height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+
+.card-elevated:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.search-container .form-control {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.search-container .input-group-text {
+  background-color: #8d5eed;
+  color: white;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
