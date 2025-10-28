@@ -1,0 +1,64 @@
+.projects-page {
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.project-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card{
+border: none;
+}
+.project-card .card-body {
+  min-height: 160px;
+}
+
+@media (max-width: 768px) {
+  .projects-page h3 {
+    font-size: 1.3rem;
+  }
+  .form-select-sm,
+  .btn-sm {
+    font-size: 0.8rem;
+  }
+}
+
+
+
+/* Project details Page CSS */
+
+.project-details-page {
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.owners-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.owner-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.owner-icon.more {
+  background-color: #e2e8f0;
+  color: #475569;
+}

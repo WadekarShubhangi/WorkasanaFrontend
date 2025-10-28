@@ -49,6 +49,9 @@ body {
   color: var(--sidebar-link);
   font-weight: 600;
 }
+.nav-link.active:hover{
+  color: var(--white);
+}
 
 .logout-btn {
   width: 100%;

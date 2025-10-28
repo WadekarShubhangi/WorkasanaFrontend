@@ -1,0 +1,42 @@
+.reports-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-card {
+  height: 360px;
+  transition: all 0.3s ease;
+}
+
+.report-card:hover {
+  transform: translateY(-3px);
+}
+
+.card-title {
+  font-size: 1rem;
+}
+
+canvas {
+  max-height: 280px !important;
+}
+
+/* Responsive: stack neatly and adjust padding */
+@media (max-width: 768px) {
+  .reports-page {
+    padding: 1rem;
+  }
+
+  .card-title {
+    text-align: center;
+  }
+
+  .report-card {
+    height: 320px;
+  }
+}

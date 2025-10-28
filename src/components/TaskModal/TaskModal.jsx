@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
-import "./TaskModal.css"
+import "./TaskModal.css";
 
 export default function TaskModal({ onClose }) {
   const {
@@ -19,7 +19,11 @@ export default function TaskModal({ onClose }) {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title fw-semibold">Create Task</h5>
-              <button type="button" className="btn-close" onClick={onClose}></button>
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                onClick={onClose}
+              ></button>
             </div>
 
             <div className="modal-body">
@@ -87,7 +91,10 @@ export default function TaskModal({ onClose }) {
                       taskHandleChange({
                         target: {
                           name: "owners",
-                          value: Array.from(e.target.selectedOptions, (o) => o.value),
+                          value: Array.from(
+                            e.target.selectedOptions,
+                            (o) => o.value
+                          ),
                         },
                       })
                     }
@@ -99,7 +106,9 @@ export default function TaskModal({ onClose }) {
                         </option>
                       ))}
                   </select>
-                  <div className="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                  <div className="form-text">
+                    Hold Ctrl/Cmd to select multiple.
+                  </div>
                 </div>
 
                 {/* Tags */}
@@ -109,8 +118,12 @@ export default function TaskModal({ onClose }) {
                     type="text"
                     className="form-control"
                     name="tags"
-                    placeholder="e.g. ui, testing"
-                    value={Array.isArray(addTask.tags) ? addTask.tags.join(", ") : addTask.tags || ""}
+                    placeholder="e.g. High, Low, Medium"
+                    value={
+                      Array.isArray(addTask.tags)
+                        ? addTask.tags.join(", ")
+                        : addTask.tags || ""
+                    }
                     onChange={taskHandleChange}
                   />
                 </div>
@@ -129,6 +142,8 @@ export default function TaskModal({ onClose }) {
                     onChange={taskHandleChange}
                   />
                 </div>
+
+                
               </form>
             </div>
 

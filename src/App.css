@@ -5,9 +5,10 @@
   --sidebar-link: #8d5eed;
   --sidebar-font-color: #81868f;
   --button-hover: #2f5dd1;
-  --logout-color: #b23b3b;
+  --logout-color: #ffa808;
   --darkslateblue: #483D8B;
   --indigo:#4B0082;
+  --white: #ffffff;
 }
 /* ===== Layout Setup ===== */
 .layout {
@@ -48,7 +49,6 @@
     top: 15px;
     right: 20px;
     z-index: 1001;
-    /* border-radius: 6px; */
     font-size: 22px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }

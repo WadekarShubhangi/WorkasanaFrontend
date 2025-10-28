@@ -1,6 +1,5 @@
 .modal-content {
   border-radius: 10px;
-  border: none;
 }
 
 .modal-header {
@@ -9,7 +8,9 @@
   border-bottom: 1px solid #dee2e6;
 }
 
-.form-select,
-.form-control {
-  border-radius: 6px;
+/* .modal-header .btn-close {
+  filter: invert(1) brightness(2); 
+} */
+.modal-footer {
+  border-top: 1px solid #dee2e6;
 }

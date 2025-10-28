@@ -1,127 +1,223 @@
-import React, { useContext, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useContext, useState, useMemo } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
-import TaskCard from "../../components/TaskCard/TaskCard"; // Assuming you will create a TaskCard component
+import TaskModal from "../../components/TaskModal/TaskModal"
+import "./Project.css";
 
-export default function ProjectDetail() {
-    const { id: projectId } = useParams();
-    const { 
-        projectData, 
-        taskData, 
-        // We can reuse the modal logic if we want to add a task from here
-        setShowTaskModal, 
-        showTaskModal 
-    } = useContext(WorkasanaContext);
+export default function ProjectDetails() {
+  const { id: projectId } = useParams();
+  const { projectData, taskData, setShowTaskModal, showTaskModal } =
+    useContext(WorkasanaContext);
 
-    // 1. Find the specific project details
-    const project = useMemo(() => {
-        return projectData?.find(p => p._id === projectId);
-    }, [projectData, projectId]);
+  const [ownerFilter, setOwnerFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
-    // 2. Filter tasks relevant to this project ID
-    const projectTasks = useMemo(() => {
-        return taskData?.filter(t => t.project?._id === projectId || t.project === projectId);
-    }, [taskData, projectId]);
-    
-    // Calculate basic statistics
-    const totalTasks = projectTasks?.length || 0;
-    const completedTasks = projectTasks?.filter(t => t.status === "Completed").length || 0;
-    const pendingTasks = totalTasks - completedTasks;
+  // ✅ Get selected project
+  const project = Array.isArray(projectData)
+    ? projectData.find((p) => p._id === projectId)
+    : null;
 
-    // Handle loading or not found state
-    if (!projectData || !taskData) {
-        return <div className="text-center my-5">Loading project details...</div>;
+  // ✅ Get tasks for this project
+  const projectTasks = useMemo(() => {
+    if (!Array.isArray(taskData)) return [];
+
+    let filtered = taskData.filter((task) => task.project?._id === projectId);
+
+    // Apply owner filter
+    if (ownerFilter) {
+      filtered = filtered.filter((task) =>
+        task.owners?.some((o) =>
+          o.name.toLowerCase().includes(ownerFilter.toLowerCase())
+        )
+      );
     }
 
-    if (!project) {
-        return (
-            <div className="alert alert-danger text-center my-5" role="alert">
-                Project not found.
-                <Link to="/projects" className="ms-2">Go back to Projects</Link>
-            </div>
-        );
+    // Apply tag filter
+    if (tagFilter) {
+      filtered = filtered.filter((task) =>
+        task.tags?.some((t) =>
+          t.toLowerCase().includes(tagFilter.toLowerCase())
+        )
+      );
     }
 
-    return (
-        <div className="project-detail-container">
-            {showTaskModal && (
-                // Assuming TaskModal can take a defaultProject prop
-                <TaskModal 
-                    onClose={() => setShowTaskModal(false)} 
-                    defaultProject={projectId}
-                />
-            )}
+    // Apply date filter (createdAt)
+    if (dateFilter) {
+      filtered = filtered.filter(
+        (task) => task.createdAt.slice(0, 10) === dateFilter
+      );
+    }
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <Link to="/projects" className="btn btn-link p-0 mb-2 text-decoration-none">
-                        <i className="bi bi-arrow-left me-1"></i> Back to Projects
-                    </Link>
-                    <h1 className="fw-bold">{project.name}</h1>
-                    <p className="text-muted">{project.description}</p>
-                </div>
-                <div>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowTaskModal(true)}
-                    >
-                        <i className="bi bi-plus-lg me-1"></i> Add Task
-                    </button>
-                    {/* Placeholder for Edit/Delete buttons */}
-                </div>
-            </div>
-            
-            <hr />
+    return filtered;
+  }, [taskData, projectId, ownerFilter, tagFilter, dateFilter]);
 
-            {/* Project Status/Stats Card Block */}
-            <div className="row g-4 mb-5">
-                <div className="col-md-4">
-                    <div className="card text-center h-100 p-3 shadow-sm border-0">
-                        <h5 className="text-primary">Total Tasks</h5>
-                        <p className="display-4 fw-bold">{totalTasks}</p>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card text-center h-100 p-3 shadow-sm border-0">
-                        <h5 className="text-success">Completed</h5>
-                        <p className="display-4 fw-bold">{completedTasks}</p>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card text-center h-100 p-3 shadow-sm border-0">
-                        <h5 className="text-warning">Pending</h5>
-                        <p className="display-4 fw-bold">{pendingTasks}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Task List Section */}
-            <h3>Tasks for this Project ({projectTasks?.length})</h3>
-            <div className="row mt-4">
-                {projectTasks?.length > 0 ? (
-                    projectTasks.map((task) => (
-                        // Replace the div with your actual TaskCard component when ready
-                        <div key={task._id} className="col-lg-4 col-md-6 mb-4">
-                            <div className={`card shadow-sm border-start border-3 
-                                ${task.status === "Completed" ? "border-success" : 
-                                 task.status === "In Progress" ? "border-primary" : "border-secondary"}`}>
-                                <div className="card-body">
-                                    <h5 className="card-title">{task.name}</h5>
-                                    <p className="small text-muted mb-1">Status: **{task.status}**</p>
-                                    <p className="small text-muted mb-1">Team: {task.team?.name || 'N/A'}</p>
-                                    <p className="small text-muted mb-0">Owner: {task.owners?.[0]?.name || 'Unassigned'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="col-12">
-                        <div className="alert alert-secondary text-center" role="alert">
-                            No tasks have been assigned to this project yet.
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+  // ✅ Utility: calculate due date
+  const getDueDate = (task) => {
+    if (!task.createdAt || !task.timeToComplete) return "—";
+    const created = new Date(task.createdAt);
+    const due = new Date(
+      created.getTime() + task.timeToComplete * 24 * 60 * 60 * 1000
     );
+    return due.toLocaleDateString();
+  };
+
+  return (
+    <>
+      {showTaskModal && <TaskModal onClose={() => setShowTaskModal(false)} />}
+
+      <div className="container-fluid">
+        
+        {project ? (
+          <>
+            {/* === Project Header === */}
+            <div className="mb-4">
+              <h3 className="fw-semibold">{project.name}</h3>
+              <p className="text-muted">{project.description}</p>
+            </div>
+
+            {/* === Filters === */}
+            <div className="d-flex justify-content-between">
+              <div className="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                <input
+                  type="text"
+                  className="form-control form-control-sm w-auto"
+                  placeholder="Filter by owner"
+                  value={ownerFilter}
+                  onChange={(e) => setOwnerFilter(e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="form-control form-control-sm w-auto"
+                  placeholder="Filter by tag"
+                  value={tagFilter}
+                  onChange={(e) => setTagFilter(e.target.value)}
+                />
+                <input
+                  type="date"
+                  className="form-control form-control-sm w-auto"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setShowTaskModal(true)}
+                >
+                  <i className="bi bi-plus-lg me-1"></i> Add Task
+                </button>
+              </div>
+            </div>
+
+         
+            <div className="table-responsive">
+              <table className="table table-bordered align-middle text-center">
+                <thead className="table-primary">
+                  <tr>
+                    <th scope="col">Task</th>
+                    <th scope="col">Owners</th>
+                    <th scope="col">Tags</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Due Date</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projectTasks.length > 0 ? (
+                    projectTasks.map((task) => (
+                      <tr key={task._id}>
+                        <td className="fw-medium text-start">{task.name}</td>
+
+                        {/* === Owners === */}
+                        <td>
+                          <div className="d-flex justify-content-center align-items-center gap-1">
+                            {task.owners?.slice(0, 3).map((o, i) => (
+                              <div
+                                key={i}
+                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                style={{
+                                  width: "28px",
+                                  height: "28px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                }}
+                                title={o.name}
+                              >
+                                {o.name[0].toUpperCase()}
+                              </div>
+                            ))}
+                            {task.owners?.length > 3 && (
+                              <div
+                                className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                style={{
+                                  width: "28px",
+                                  height: "28px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                +{task.owners.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* === Tags === */}
+                        <td>
+                          {Array.isArray(task.tags) && task.tags.length > 0 ? (
+                            task.tags.map((tag, i) => (
+                              <span
+                                key={i}
+                                className="badge bg-secondary text-white me-1"
+                              >
+                                {tag}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-muted small">—</span>
+                          )}
+                        </td>
+
+                        {/* === Dates === */}
+                        <td>{new Date(task.createdAt).toLocaleDateString()}</td>
+                        <td>{getDueDate(task)}</td>
+
+                        {/* === Status === */}
+                        <td>
+                          <span
+                            className={`badge ${
+                              task.status === "Completed"
+                                ? "bg-success"
+                                : task.status === "In Progress"
+                                ? "bg-warning text-dark"
+                                : "bg-info text-dark"
+                            }`}
+                          >
+                            {task.status}
+                          </span>
+                        </td>
+                       
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted py-3">
+                        No tasks found for this project.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-muted mt-5">
+            Project not found or still loading...
+          </p>
+        )}
+      </div>
+    </>
+  );
 }

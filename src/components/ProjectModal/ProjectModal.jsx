@@ -2,7 +2,7 @@ import { useContext } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
 
 export default function ProjectModal({ onClose }) {
-  const { addProject = {}, createProject, projectHandleChange } = useContext(WorkasanaContext);
+  const { addProject, createProject, projectHandleChange } = useContext(WorkasanaContext);
 
 
   return (
@@ -12,7 +12,7 @@ export default function ProjectModal({ onClose }) {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Create Project</h5>
-              <button type="button" className="btn-close" onClick={onClose}></button>
+              <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
             </div>
             <div className="modal-body">
               <input

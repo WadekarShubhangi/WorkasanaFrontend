@@ -8,6 +8,7 @@ export function WorkasanaProvider({ children }) {
   const [closeSideBar, setCloseSideBar] = useState(false);
   const [token, setToken] = useState(localStorage.getItem("userToken") || null);
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [addProject, setAddProject] = useState({ name: "", description: "" }); // Initial state for Task based on Mongoose Schema
 
@@ -21,29 +22,35 @@ export function WorkasanaProvider({ children }) {
     status: "To Do", // Default status
   });
 
-  const API_BASE = "https://workasana-zeta.vercel.app";
+  const [addTeam, setAddTeam] = useState({
+    name: "",
+    description: "",
+    members: [], // ✅ Add this
+  });
 
-// ✅ Corrected safe fetch calls
+  const API_BASE = "https://workasana-r99o.onrender.com";
 
-const { data: projectData, refetch: refetchProjects } = useFetch(
-  token ? `${API_BASE}/projects` : null,
-  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-);
+  // ✅ Corrected safe fetch calls
 
-const { data: taskData, refetch: refetchTasks } = useFetch(
-  token ? `${API_BASE}/tasks` : null,
-  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-);
+  const { data: projectData, refetch: refetchProjects } = useFetch(
+    token ? `${API_BASE}/projects` : null,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+  );
 
-const { data: teamData, refetch: refetchTeams } = useFetch(
-  token ? `${API_BASE}/teams` : null,
-  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-);
+  const { data: taskData, refetch: refetchTasks } = useFetch(
+    token ? `${API_BASE}/tasks` : null,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+  );
 
-const { data: ownersData, refetch: refetchOwners } = useFetch(
-  token ? `${API_BASE}/auth/users` : null,
-  token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-);
+  const { data: teamData, refetch: refetchTeams } = useFetch(
+    token ? `${API_BASE}/teams` : null,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+  );
+
+  const { data: ownersData, refetch: refetchOwners } = useFetch(
+    token ? `${API_BASE}/auth/users` : null,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+  );
 
   // --- Auth Functions --- // Signup
 
@@ -83,7 +90,9 @@ const { data: ownersData, refetch: refetchOwners } = useFetch(
     localStorage.removeItem("userToken");
     setToken(null);
     window.location.reload();
-  }; // --- Utility Functions ---
+  };
+
+  // --- Utility Functions ---
 
   const getRandomProjects = (count) => {
     if (!Array.isArray(projectData)) return [];
@@ -95,7 +104,9 @@ const { data: ownersData, refetch: refetchOwners } = useFetch(
     if (!Array.isArray(taskData)) return [];
     const shuffled = [...taskData].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
-  }; // --- Project Logic ---
+  };
+
+  // --- Project Logic ---
 
   const projectHandleChange = (e) => {
     setAddProject({ ...addProject, [e.target.name]: e.target.value });
@@ -224,6 +235,132 @@ const { data: ownersData, refetch: refetchOwners } = useFetch(
     }
   };
 
+  const teamHandleChange = (e) => {
+    const { name, value } = e.target;
+    setAddTeam((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const createTeam = async () => {
+    if (!addTeam.name.trim()) {
+      alert("Team Name is required.");
+      return;
+    }
+
+    if (!token) {
+      alert("Please log in to create a team.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/teams`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(addTeam),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Team created successfully!");
+        await refetchTeams(); // refresh list
+        setShowTeamModal(false); // close modal
+        setAddTeam({ name: "", description: "", members: [] }); // reset form
+      } else {
+        alert(data.message || "Failed to create team.");
+      }
+    } catch (error) {
+      console.error("Error creating team:", error);
+      alert("An error occurred. Check console for details.");
+    }
+  };
+
+  const addMemberToTeam = async (teamId, userId) => {
+    if (!teamId || !userId) {
+      alert("Team ID and User ID are required.");
+      return;
+    }
+
+    if (!token) {
+      alert("Please log in first.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/teams/${teamId}/add-member`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Member added successfully!");
+        await refetchTeams(); // refresh the data
+      } else {
+        alert(data.message || "Failed to add member.");
+      }
+    } catch (error) {
+      console.error("Error adding member:", error);
+      alert("Something went wrong. Check console for details.");
+    }
+  };
+
+  // --- Report Helpers --- //
+
+  // Tasks count grouped by Project
+ // --- Reporting Data Functions --- //
+const getTasksByProject = () => {
+  if (!Array.isArray(taskData)) return { labels: [], data: [] };
+  const grouped = {};
+  taskData.forEach((task) => {
+    const projectName = task.project?.name || "Unassigned";
+    grouped[projectName] = (grouped[projectName] || 0) + 1;
+  });
+  return { labels: Object.keys(grouped), data: Object.values(grouped) };
+};
+
+const getTasksByTeam = () => {
+  if (!Array.isArray(taskData)) return { labels: [], data: [] };
+  const grouped = {};
+  taskData.forEach((task) => {
+    const teamName = task.team?.name || "Unassigned";
+    grouped[teamName] = (grouped[teamName] || 0) + 1;
+  });
+  return { labels: Object.keys(grouped), data: Object.values(grouped) };
+};
+
+const getTasksByStatus = () => {
+  if (!Array.isArray(taskData)) return { labels: [], data: [] };
+  const grouped = {};
+  taskData.forEach((task) => {
+    const status = task.status || "To Do";
+    grouped[status] = (grouped[status] || 0) + 1;
+  });
+  return { labels: Object.keys(grouped), data: Object.values(grouped) };
+};
+
+const getTasksByOwner = () => {
+  if (!Array.isArray(taskData)) return { labels: [], data: [] };
+  const grouped = {};
+  taskData.forEach((task) => {
+    task.owners?.forEach((owner) => {
+      grouped[owner.name] = (grouped[owner.name] || 0) + 1;
+    });
+  });
+  return { labels: Object.keys(grouped), data: Object.values(grouped) };
+};
+
+
   return (
     <WorkasanaContext.Provider
       value={{
@@ -258,6 +395,19 @@ const { data: ownersData, refetch: refetchOwners } = useFetch(
         addTask,
         taskHandleChange,
         createTask,
+
+        teamData,
+        showTeamModal,
+        setShowTeamModal,
+        addTeam,
+        teamHandleChange,
+        createTeam,
+
+        addMemberToTeam,
+
+        getTasksByProject,
+        getTasksByStatus,
+        getTasksByTeam, getTasksByOwner
       }}
     >
             {children}   {" "}

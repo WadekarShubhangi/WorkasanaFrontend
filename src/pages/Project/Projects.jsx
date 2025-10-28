@@ -1,95 +1,162 @@
-import React, { useContext } from "react";
-// Correcting path assumption: The Project page is under src/pages/Project, 
-// so we need to go up two levels to reach src/.
-// From src/pages/Project to src/contexts/WorkasanaContext is: ../../contexts/WorkasanaContext
-import WorkasanaContext from "../../contexts/WorkasanaContext"; 
+import { useContext, useState, useMemo } from "react";
+import WorkasanaContext from "../../contexts/WorkasanaContext";
+import { useNavigate } from "react-router-dom";
 import ProjectModal from "../../components/ProjectModal/ProjectModal";
-import { Link } from "react-router-dom"; 
-// import "./Projects.css"; 
+import "./Project.css";
 
 export default function Projects() {
-    const { 
-        projectData, 
-        showProjectModal, 
-        setShowProjectModal
-    } = useContext(WorkasanaContext);
+  const {
+    projectData,
+    showProjectModal,
+    setShowProjectModal,
+    ownersData,
+    taskData,
+  } = useContext(WorkasanaContext);
 
-    // Determine loading state based on whether projectData is fetched
-    const isLoading = projectData === undefined; 
+  const navigate = useNavigate();
 
-    return (
-        <>
-            {showProjectModal && (
-                <ProjectModal onClose={() => setShowProjectModal(false)} />
-            )}
+  const [sortOption, setSortOption] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("");
 
-            <div className="projects-container">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Projects</h2>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowProjectModal(true)}
-                    >
-                        <i className="bi bi-plus-lg me-1"></i> Add New Project
-                    </button>
-                </div>
+  const filteredProjects = useMemo(() => {
+    if (!Array.isArray(projectData) || projectData.length === 0) return [];
 
-                {isLoading ? (
-                    // Display loading spinner while data is being fetched
-                    <div className="text-center my-5">
-                        <div className="spinner-border text-primary" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
+    let filtered = [...projectData];
+
+    // --- Filter by Owner ---
+    if (ownerFilter.trim()) {
+      const ownerTasks = Array.isArray(taskData)
+        ? taskData.filter((t) =>
+            t.owners?.some(
+              (o) => o.name.toLowerCase() === ownerFilter.toLowerCase()
+            )
+          )
+        : [];
+
+      const ownerProjectIds = ownerTasks.map((t) => t.project?._id);
+
+      filtered = filtered.filter((p) => ownerProjectIds.includes(p._id));
+    }
+
+    // --- Sorting Logic ---
+    if (sortOption === "newest") {
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortOption === "oldest") {
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (sortOption === "low") {
+      // Low → Medium → High
+      const order = { low: 1, medium: 2, high: 3 };
+      filtered.sort((a, b) => {
+        const aTag = a.tags?.[0]?.toLowerCase() || "zzz"; // fallback for undefined
+        const bTag = b.tags?.[0]?.toLowerCase() || "zzz";
+        return (order[aTag] || 4) - (order[bTag] || 4);
+      });
+    } else if (sortOption === "high") {
+      // High → Medium → Low
+      const order = { high: 1, medium: 2, low: 3 };
+      filtered.sort((a, b) => {
+        const aTag = a.tags?.[0]?.toLowerCase() || "zzz";
+        const bTag = b.tags?.[0]?.toLowerCase() || "zzz";
+        return (order[aTag] || 4) - (order[bTag] || 4);
+      });
+    }
+    return filtered;
+  }, [projectData, taskData, ownerFilter, sortOption]);
+
+  return (
+    <>
+      {showProjectModal && (
+        <ProjectModal onClose={() => setShowProjectModal(false)} />
+      )}
+
+      <div className="projects-page container-fluid">
+        <h2 className="fw-semibold mb-4">All Projects</h2>
+        <div className="d-flex gap-2 align-items-center justify-content-between mb-4 flex-wrap">
+          <div className="d-flex gap-2 flex-wrap">
+            <select
+              className="form-select form-select-sm w-auto"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+            >
+              <option value="">Sort By</option>
+              <option value="low">Low Priority</option>
+              <option value="high">High Priority</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+
+            {/* Filter by Owner */}
+            <select
+              className="form-select form-select-sm w-auto"
+              value={ownerFilter}
+              onChange={(e) => setOwnerFilter(e.target.value)}
+            >
+              <option value="">Filter by Owner</option>
+              {Array.isArray(ownersData) &&
+                ownersData.map((o) => (
+                  <option key={o._id} value={o.name}>
+                    {o.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Add Button */}
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => setShowProjectModal(true)}
+          >
+            <i className="bi bi-plus-lg me-1"></i> Add Project
+          </button>
+        </div>
+
+        <div className="row g-3">
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((proj) => (
+              <div
+                key={proj._id}
+                className="col-md-4 d-flex"
+                onClick={() => navigate(`/projects/${proj._id}`)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="card project-card flex-fill shadow-sm">
+                  <div className="card-body d-flex flex-column justify-content-between">
+                    <div>
+                      <h5 className="card-title fw-semibold text-primary mb-2">
+                        {proj.name}
+                      </h5>
+                      <p className="text-muted small">
+                        {proj.description || "No description provided."}
+                      </p>
+                      {proj.tags?.length > 0 && (
+                        <span className="badge bg-secondary-subtle text-dark">
+                          {proj.tags[0]}
+                        </span>
+                      )}
                     </div>
-                ) : (
-                    <div className="row">
-                        {projectData?.length > 0 ? (
-                            projectData.map((proj) => (
-                                <div key={proj._id} className="col-lg-4 col-md-6 mb-4 d-flex">
-                                    {/* Link wraps the entire card to navigate to the Project Detail Page */}
-                                    <Link 
-                                        to={`/projects/${proj._id}`} 
-                                        className="text-decoration-none flex-fill"
-                                        style={{ color: 'inherit' }} // Keep text color default
-                                    >
-                                        <div className="card card-elevated flex-fill h-100 shadow-sm transition-shadow">
-                                            <div className="card-body">
-                                                <div className="d-flex justify-content-between align-items-start">
-                                                    <h5 className="card-title fw-bold mb-3">{proj.name}</h5>
-                                                    {/* Placeholder for future action menu */}
-                                                    <i className="bi bi-three-dots text-muted cursor-pointer"></i>
-                                                </div>
-                                                
-                                                {/* Projects don't have status in model, using a generic badge */}
-                                                <span className="badge bg-info-subtle text-info mb-2">
-                                                    Active
-                                                </span>
-
-                                                <p className="card-text text-muted small mt-2">
-                                                    {proj.description || "No description provided."}
-                                                </p>
-
-                                                <hr className="my-2"/>
-                                                <div className="d-flex justify-content-between small text-muted">
-                                                    <span>Created: {new Date(proj.createdAt).toLocaleDateString()}</span>
-                                                    {/* Placeholder for Task Count */}
-                                                    <span>Tasks: 0</span> 
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="col-12">
-                                <div className="alert alert-info text-center" role="alert">
-                                    No projects found. Click "Add New Project" to get started!
-                                </div>
-                            </div>
+                    <div className="text-end">
+                      <small className="text-secondary">
+                        {new Date(proj.createdAt).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
                         )}
+                      </small>
                     </div>
-                )}
-            </div>
-        </>
-    );
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-muted mt-4">
+              No projects found. Try adding one!
+            </p>
+          )}
+        </div>
+      </div>
+    </>
+  );
 }

@@ -1,0 +1,15 @@
+.task-detail-card {
+  max-width: 750px;
+  border-radius: 1rem;
+}
+
+.card-header {
+  border-top-left-radius: 1rem !important;
+  border-top-right-radius: 1rem !important;
+}
+
+@media (max-width: 576px) {
+  .task-detail-card {
+    margin: 0 10px;
+  }
+}
