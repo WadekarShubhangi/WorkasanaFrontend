@@ -9,9 +9,7 @@ export default function SearchBox({ query, setQuery }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        {/* <span className="input-group-text">
-          <i className="bi bi-search"></i>
-        </span> */}
+       
       </div>
     </div>
   );

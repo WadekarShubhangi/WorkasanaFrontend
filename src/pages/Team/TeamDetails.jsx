@@ -24,8 +24,6 @@ const [showMemberModal, setShowMemberModal] = useState(false);
   />
 )}
 
-     
-
       {/* Team Card */}
       <h2 className="fw-semibold mb-4">{selectedTeam.name}</h2>
       <div>

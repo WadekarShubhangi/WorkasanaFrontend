@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useContext, useState, useMemo } from "react";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
 import TaskModal from "../../components/TaskModal/TaskModal"
@@ -8,6 +8,8 @@ export default function ProjectDetails() {
   const { id: projectId } = useParams();
   const { projectData, taskData, setShowTaskModal, showTaskModal } =
     useContext(WorkasanaContext);
+
+    const navigate = useNavigate()
 
   const [ownerFilter, setOwnerFilter] = useState("");
   const [tagFilter, setTagFilter] = useState("");
@@ -44,6 +46,7 @@ export default function ProjectDetails() {
 
     // Apply date filter (createdAt)
     if (dateFilter) {
+      console.log("date", dateFilter, "filtered", filtered, filtered[0].createdAt.slice(0, 10));
       filtered = filtered.filter(
         (task) => task.createdAt.slice(0, 10) === dateFilter
       );
@@ -127,7 +130,7 @@ export default function ProjectDetails() {
                 <tbody>
                   {projectTasks.length > 0 ? (
                     projectTasks.map((task) => (
-                      <tr key={task._id}>
+                      <tr key={task._id} onClick={() => navigate(`/tasks/${task._id}`)} className="cursor-pointer">
                         <td className="fw-medium text-start">{task.name}</td>
 
                         {/* === Owners === */}
@@ -198,7 +201,6 @@ export default function ProjectDetails() {
                             {task.status}
                           </span>
                         </td>
-                       
                       </tr>
                     ))
                   ) : (

@@ -43,13 +43,8 @@ export default function Reports() {
 
   return (
     <div className="container-fluid reports-page">
-
         <h3 className="fw-semibold">Workasana Reports</h3>
-        
-
-      {/* === Report Overview Section === */}
       <div className="report-section">
-        {/* 1️⃣ Total Work Done Last Week */}
         <div className="card report-card shadow-sm border-0 mb-4">
           <div className="card-body">
             <h5 className="card-title fw-semibold text-primary mb-3">
@@ -83,7 +78,7 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* 2️⃣ Total Days of Work Pending */}
+    
         <div className="card report-card shadow-sm border-0 mb-4">
           <div className="card-body">
             <h5 className="card-title fw-semibold text-primary mb-3">
@@ -117,7 +112,7 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* 3️⃣ Tasks Closed by Team */}
+      
         <div className="card report-card shadow-sm border-0 mb-4">
           <div className="card-body">
             <h5 className="card-title fw-semibold text-primary mb-3">
@@ -161,7 +156,7 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* 4️⃣ Tasks Closed by Owner (BAR CHART) */}
+    
         <div className="card report-card shadow-sm border-0">
           <div className="card-body">
             <h5 className="card-title fw-semibold text-primary mb-3">

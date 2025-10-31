@@ -87,6 +87,14 @@
     padding: 1.5rem;
     margin-top: 3.5rem; /* space for hamburger */
   }
+  .mobile-view-nav {
+      width: 100%;
+    position: fixed;
+    height: 72px;
+    top: -16px;
+    z-index: 99999999;
+    background: #efecf9;
+}
 }
 
 /* ===== Desktop ===== */

@@ -16,6 +16,7 @@ export default function Dashboard() {
     setShowTaskModal,
     getRandomProjects,
     getRandomTasks,
+    getProjectStatus
   } = useContext(WorkasanaContext);
 
   const [query, setQuery] = useState("");
@@ -83,6 +84,11 @@ export default function Dashboard() {
               <div key={proj._id} className="col-md-4 mb-3 d-flex">
                 <div className="card card-elevated flex-fill">
                   <div className="card-body">
+                    <span
+                      className={`badge bg-${getColorClass(getProjectStatus(proj.name))}-subtle text-${getColorClass(getProjectStatus(proj.name))}`}
+                    >
+                      {getProjectStatus(proj.name)}
+                    </span>
                     <h5 className="card-title mt-2">{proj.name}</h5>
                     <p className="text-muted">{proj.description}</p>
                   </div>

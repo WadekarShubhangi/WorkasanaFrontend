@@ -2,10 +2,11 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import WorkasanaContext from "../../contexts/WorkasanaContext";
+import TaskModal from "../../components/TaskModal/TaskModal";
 import "./Tasks.css";
 
 export default function Tasks() {
-  const { taskData } = useContext(WorkasanaContext);
+  const { taskData, showTaskModal, setShowTaskModal,updateTaskStatus } = useContext(WorkasanaContext);
   const navigate = useNavigate();
 
   if (!Array.isArray(taskData)) {
@@ -14,12 +15,14 @@ export default function Tasks() {
 
   return (
     <div className="container-fluid">
+      {showTaskModal && <TaskModal onClose={() => setShowTaskModal(false)} />}
+      
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h3 className="fw-semibold mb-2 mb-md-0">All Tasks</h3>
         <button
           className="btn btn-primary btn-sm"
-          onClick={() => navigate("/createTask")}
+          onClick={() => setShowTaskModal(true)} 
         >
           <i className="bi bi-plus-lg me-1"></i> New Task
         </button>
@@ -83,17 +86,36 @@ export default function Tasks() {
                   </div>
 
                   {/* Status */}
-                  <span
-                    className={`badge ${
-                      task.status === "Completed"
-                        ? "bg-success-subtle text-success"
-                        : task.status === "In Progress"
-                        ? "bg-warning-subtle text-warning"
-                        : "bg-info-subtle text-info"
-                    }`}
-                  >
-                    {task.status}
-                  </span>
+ <div className="d-flex justify-content-between align-items-center">
+  <span
+    className={`badge ${
+      task.status === "Completed"
+        ? "bg-success-subtle text-success"
+        : task.status === "In Progress"
+        ? "bg-warning-subtle text-warning"
+        : "bg-info-subtle text-info"
+    }`}
+  >
+    {task.status}
+  </span>
+
+  <button
+    className="btn btn-sm btn-outline-primary"
+    onClick={(e) => {
+      e.stopPropagation(); // prevent card click navigation
+      const nextStatus =
+        task.status === "To Do"
+          ? "In Progress"
+          : task.status === "In Progress"
+          ? "Completed"
+          : "To Do";
+      updateTaskStatus(task._id, nextStatus);
+    }}
+  >
+    Update
+  </button>
+</div>
+
                 </div>
               </div>
             </div>

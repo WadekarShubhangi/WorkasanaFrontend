@@ -26,7 +26,7 @@ export default function App() {
         </aside>
       )}
 
-      <div className="my-3 d-flex justify-content-between align-items-center">
+      <div className="my-3 d-flex justify-content-between align-items-center mobile-view-nav">
         {token && (
           <button
             className="toggle-btn"

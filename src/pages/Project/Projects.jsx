@@ -11,6 +11,7 @@ export default function Projects() {
     setShowProjectModal,
     ownersData,
     taskData,
+    getProjectStatus
   } = useContext(WorkasanaContext);
 
   const navigate = useNavigate();
@@ -62,7 +63,6 @@ export default function Projects() {
     }
     return filtered;
   }, [projectData, taskData, ownerFilter, sortOption]);
-
   return (
     <>
       {showProjectModal && (
@@ -121,6 +121,17 @@ export default function Projects() {
               >
                 <div className="card project-card flex-fill shadow-sm">
                   <div className="card-body d-flex flex-column justify-content-between">
+                    <span
+                      className={`badge ${
+                      getProjectStatus(proj.name) === "Completed"
+                        ? "bg-success-subtle text-success"
+                        : getProjectStatus(proj.name) === "In Progress"
+                        ? "bg-warning-subtle text-warning"
+                        : "bg-info-subtle text-info"
+                    }`}
+                    >
+                      {getProjectStatus(proj.name)}
+                    </span>
                     <div>
                       <h5 className="card-title fw-semibold text-primary mb-2">
                         {proj.name}
@@ -146,6 +157,7 @@ export default function Projects() {
                         )}
                       </small>
                     </div>
+                    
                   </div>
                 </div>
               </div>

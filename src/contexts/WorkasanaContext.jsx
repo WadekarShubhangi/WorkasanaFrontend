@@ -1,6 +1,7 @@
 import { createContext, useState } from "react";
-import useFetch from "../useFetch"; // Assuming useFetch hook is in a relative path
-
+import useFetch from "../useFetch";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const WorkasanaContext = createContext();
 export default WorkasanaContext;
 
@@ -10,27 +11,25 @@ export function WorkasanaProvider({ children }) {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [addProject, setAddProject] = useState({ name: "", description: "" }); // Initial state for Task based on Mongoose Schema
+  const [addProject, setAddProject] = useState({ name: "", description: "" });
 
   const [addTask, setAddTask] = useState({
     name: "",
-    project: "", // ObjectId
-    team: "", // ObjectId
-    owners: [], // Array of ObjectIds
-    tags: "", // We initialize as string for modal input, convert to Array in handler
-    timeToComplete: "", // Number
-    status: "To Do", // Default status
+    project: "",
+    team: "",
+    owners: [],
+    tags: "",
+    timeToComplete: "",
+    status: "To Do",
   });
 
   const [addTeam, setAddTeam] = useState({
     name: "",
     description: "",
-    members: [], // ✅ Add this
+    members: [],
   });
 
   const API_BASE = "https://workasana-r99o.onrender.com";
-
-  // ✅ Corrected safe fetch calls
 
   const { data: projectData, refetch: refetchProjects } = useFetch(
     token ? `${API_BASE}/projects` : null,
@@ -52,8 +51,6 @@ export function WorkasanaProvider({ children }) {
     token ? { headers: { Authorization: `Bearer ${token}` } } : {}
   );
 
-  // --- Auth Functions --- // Signup
-
   const signupUser = async (userData, navigate) => {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: "POST",
@@ -61,14 +58,13 @@ export function WorkasanaProvider({ children }) {
       body: JSON.stringify(userData),
     });
     const data = await res.json();
-    console.log("Signup response:", data);
     if (res.ok) {
-      alert("Signup successful");
+      toast.success("Signup successful");
       navigate("/login");
     } else {
-      alert(data.message || "Signup failed");
+      toast.error(data.message || "Signup failed");
     }
-  }; // Login
+  };
 
   const loginUser = async (credentials, navigate) => {
     const res = await fetch(`${API_BASE}/auth/login`, {
@@ -82,7 +78,7 @@ export function WorkasanaProvider({ children }) {
       setToken(data.token);
       navigate("/dashboard");
     } else {
-      alert("Login failed");
+      toast.error("Login failed");
     }
   };
 
@@ -91,8 +87,6 @@ export function WorkasanaProvider({ children }) {
     setToken(null);
     window.location.reload();
   };
-
-  // --- Utility Functions ---
 
   const getRandomProjects = (count) => {
     if (!Array.isArray(projectData)) return [];
@@ -106,19 +100,17 @@ export function WorkasanaProvider({ children }) {
     return shuffled.slice(0, count);
   };
 
-  // --- Project Logic ---
-
   const projectHandleChange = (e) => {
     setAddProject({ ...addProject, [e.target.name]: e.target.value });
   };
 
   const createProject = async () => {
     if (!addProject.name.trim()) {
-      alert("Project Name is required.");
+      toast.success("Project Name is required.");
       return;
     }
     if (!token) {
-      alert("Please log in to create a project.");
+      toast.error("Please log in to create a project.");
       return;
     }
 
@@ -135,39 +127,35 @@ export function WorkasanaProvider({ children }) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Project created successfully!");
+        toast.success("Project created successfully!");
         await refetchProjects();
         setShowProjectModal(false);
         setAddProject({ name: "", description: "" });
       } else {
-        alert(data.message || "Failed to create project.");
+        toast.error(data.message || "Failed to create project.");
       }
     } catch (error) {
       console.error("Error creating project:", error);
-      alert("An error occurred. Check console for details.");
+      toast.error("An error occurred. Check console for details.");
     }
-  }; // --- Task Logic (NEW) ---
+  };
 
   const taskHandleChange = (e) => {
     const { name, value } = e.target;
-    let newValue = value; // Special handling for tags (string to array conversion)
+    let newValue = value;
 
     if (name === "tags") {
       newValue = value
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
-    } // Handling for timeToComplete (ensure it's a number, even if empty)
-    else if (name === "timeToComplete") {
+    } else if (name === "timeToComplete") {
       newValue = value === "" ? "" : Number(value);
     }
-    // Note: 'owners' is handled by a custom function in TaskModal, which passes the array value directly.
-
     setAddTask((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const createTask = async () => {
-    // Basic validation based on required schema fields
     if (
       !addTask.name.trim() ||
       !addTask.project ||
@@ -175,20 +163,18 @@ export function WorkasanaProvider({ children }) {
       addTask.owners.length === 0 ||
       !addTask.timeToComplete
     ) {
-      alert(
+      toast.success(
         "Please fill all required fields (Name, Project, Team, Owners, Time to Complete)."
       );
       return;
     }
     if (!token) {
-      alert("Please log in to create a task.");
+      toast.error("Please log in to create a task.");
       return;
     }
 
-    // Prepare payload (ensure timeToComplete is a number for the API)
     const payload = {
       ...addTask,
-      // Ensure tags is an array, even if it was just an empty string
       tags: Array.isArray(addTask.tags)
         ? addTask.tags
         : addTask.tags
@@ -213,10 +199,9 @@ export function WorkasanaProvider({ children }) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Task created successfully!");
-        await refetchTasks(); // Refresh the task list
-        setShowTaskModal(false); // Close the modal
-        // Reset the form state
+        toast.success("Task created successfully!");
+        await refetchTasks();
+        setShowTaskModal(false);
         setAddTask({
           name: "",
           project: "",
@@ -227,11 +212,11 @@ export function WorkasanaProvider({ children }) {
           status: "To Do",
         });
       } else {
-        alert(data.message || "Failed to create task.");
+        toast.error(data.message || "Failed to create task.");
       }
     } catch (error) {
       console.error("Error creating task:", error);
-      alert("An unexpected error occurred while creating the task.");
+      toast.error("An unexpected error occurred while creating the task.");
     }
   };
 
@@ -245,12 +230,12 @@ export function WorkasanaProvider({ children }) {
 
   const createTeam = async () => {
     if (!addTeam.name.trim()) {
-      alert("Team Name is required.");
+      toast.success("Team Name is required.");
       return;
     }
 
     if (!token) {
-      alert("Please log in to create a team.");
+      toast.error("Please log in to create a team.");
       return;
     }
 
@@ -267,27 +252,27 @@ export function WorkasanaProvider({ children }) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Team created successfully!");
-        await refetchTeams(); // refresh list
-        setShowTeamModal(false); // close modal
+        toast.success("Team created successfully!");
+        await refetchTeams();
+        setShowTeamModal(false);
         setAddTeam({ name: "", description: "", members: [] }); // reset form
       } else {
-        alert(data.message || "Failed to create team.");
+        toast.error(data.message || "Failed to create team.");
       }
     } catch (error) {
       console.error("Error creating team:", error);
-      alert("An error occurred. Check console for details.");
+      toast.error("An error occurred. Check console for details.");
     }
   };
 
   const addMemberToTeam = async (teamId, userId) => {
     if (!teamId || !userId) {
-      alert("Team ID and User ID are required.");
+      toast.error("Team ID and User ID are required.");
       return;
     }
 
     if (!token) {
-      alert("Please log in first.");
+      toast.error("Please log in first.");
       return;
     }
 
@@ -304,113 +289,152 @@ export function WorkasanaProvider({ children }) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Member added successfully!");
-        await refetchTeams(); // refresh the data
+        toast.success("Member added successfully!");
+        await refetchTeams();
       } else {
-        alert(data.message || "Failed to add member.");
+        toast.error(data.message || "Failed to add member.");
       }
     } catch (error) {
       console.error("Error adding member:", error);
-      alert("Something went wrong. Check console for details.");
+      toast.error("Something went wrong. Check console for details.");
     }
+  }
+  
+  // ✅ Update Task Status Function
+const updateTaskStatus = async (taskId, newStatus) => {
+  if (!token) {
+    toast.error("Please log in first.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast.success("Task status updated!");
+      await refetchTasks();
+    } else {
+      toast.error(data.message || "Failed to update task.");
+    }
+  } catch (error) {
+    console.error("Error updating task:", error);
+    toast.error("An error occurred while updating task status.");
+  }
+};
+;
+
+  const getTasksByProject = () => {
+    if (!Array.isArray(taskData)) return { labels: [], data: [] };
+    const grouped = {};
+    taskData.forEach((task) => {
+      const projectName = task.project?.name || "Unassigned";
+      grouped[projectName] = (grouped[projectName] || 0) + 1;
+    });
+    return { labels: Object.keys(grouped), data: Object.values(grouped) };
   };
 
-  // --- Report Helpers --- //
-
-  // Tasks count grouped by Project
- // --- Reporting Data Functions --- //
-const getTasksByProject = () => {
-  if (!Array.isArray(taskData)) return { labels: [], data: [] };
-  const grouped = {};
-  taskData.forEach((task) => {
-    const projectName = task.project?.name || "Unassigned";
-    grouped[projectName] = (grouped[projectName] || 0) + 1;
-  });
-  return { labels: Object.keys(grouped), data: Object.values(grouped) };
-};
-
-const getTasksByTeam = () => {
-  if (!Array.isArray(taskData)) return { labels: [], data: [] };
-  const grouped = {};
-  taskData.forEach((task) => {
-    const teamName = task.team?.name || "Unassigned";
-    grouped[teamName] = (grouped[teamName] || 0) + 1;
-  });
-  return { labels: Object.keys(grouped), data: Object.values(grouped) };
-};
-
-const getTasksByStatus = () => {
-  if (!Array.isArray(taskData)) return { labels: [], data: [] };
-  const grouped = {};
-  taskData.forEach((task) => {
-    const status = task.status || "To Do";
-    grouped[status] = (grouped[status] || 0) + 1;
-  });
-  return { labels: Object.keys(grouped), data: Object.values(grouped) };
-};
-
-const getTasksByOwner = () => {
-  if (!Array.isArray(taskData)) return { labels: [], data: [] };
-  const grouped = {};
-  taskData.forEach((task) => {
-    task.owners?.forEach((owner) => {
-      grouped[owner.name] = (grouped[owner.name] || 0) + 1;
+  const getTasksByTeam = () => {
+    if (!Array.isArray(taskData)) return { labels: [], data: [] };
+    const grouped = {};
+    taskData.forEach((task) => {
+      const teamName = task.team?.name || "Unassigned";
+      grouped[teamName] = (grouped[teamName] || 0) + 1;
     });
-  });
-  return { labels: Object.keys(grouped), data: Object.values(grouped) };
-};
+    return { labels: Object.keys(grouped), data: Object.values(grouped) };
+  };
 
+  const getTasksByStatus = () => {
+    if (!Array.isArray(taskData)) return { labels: [], data: [] };
+    const grouped = {};
+    taskData.forEach((task) => {
+      const status = task.status || "To Do";
+      grouped[status] = (grouped[status] || 0) + 1;
+    });
+    return { labels: Object.keys(grouped), data: Object.values(grouped) };
+  };
 
+  const getTasksByOwner = () => {
+    if (!Array.isArray(taskData)) return { labels: [], data: [] };
+    const grouped = {};
+    taskData.forEach((task) => {
+      task.owners?.forEach((owner) => {
+        grouped[owner.name] = (grouped[owner.name] || 0) + 1;
+      });
+    });
+    return { labels: Object.keys(grouped), data: Object.values(grouped) };
+  };
+
+  const getProjectStatus = (name) => {
+    const tasks = taskData.filter((task) => task.project.name === name);
+    if (tasks.length == 0) {
+      return "To Do";
+    } else {
+      const tasksStatus = tasks.filter((task) => task.status === "Completed");
+
+      if (tasksStatus.length === tasks.length) {
+        return "Completed";
+      } else {
+        return "In Progress";
+      }
+    }
+  };
   return (
     <WorkasanaContext.Provider
       value={{
-        // Auth & Sidebar
         logout,
         signupUser,
         loginUser,
         closeSideBar,
         setCloseSideBar,
         token,
-        setToken, // Modal States
-
+        setToken,
         showProjectModal,
         setShowProjectModal,
         showTaskModal,
-        setShowTaskModal, // Data
-
+        setShowTaskModal,
         projectData,
         taskData,
-        teamData, // NEW
-        ownersData, // NEW
+        teamData,
+        ownersData,
         refetchProjects,
         refetchTasks,
         getRandomProjects,
-        getRandomTasks, // Project Management
-
+        getRandomTasks,
         addProject,
         projectHandleChange,
         createProject,
-
-        // Task Management (NEW)
         addTask,
         taskHandleChange,
         createTask,
-
         teamData,
         showTeamModal,
         setShowTeamModal,
         addTeam,
         teamHandleChange,
         createTeam,
-
         addMemberToTeam,
-
         getTasksByProject,
         getTasksByStatus,
-        getTasksByTeam, getTasksByOwner
-      }}
+        getTasksByTeam,
+        getTasksByOwner,
+        getProjectStatus, updateTaskStatus,
+      }} 
     >
-            {children}   {" "}
+            {children}   
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+      />
     </WorkasanaContext.Provider>
   );
 }
